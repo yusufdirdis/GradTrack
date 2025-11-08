@@ -1,0 +1,5 @@
+{
+  "name": "Career Path AI Chatbot",
+  "description": "An intelligent chatbot powered by the Gemini API to help students explore and plan their career paths. It provides career summaries, generates study flowcharts, estimates tuition, and offers detailed course and instructor information.",
+  "requestFramePermissions": []
+}
