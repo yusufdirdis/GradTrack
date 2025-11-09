@@ -5,9 +5,10 @@ import { ArrowDownIcon, BookOpenIcon, CalendarIcon, DownloadIcon } from './Icons
 
 interface FlowchartProps {
     data: FlowchartData;
+    onCourseClick: (courseName: string) => void;
 }
 
-const Flowchart: React.FC<FlowchartProps> = ({ data }) => {
+const Flowchart: React.FC<FlowchartProps> = ({ data, onCourseClick }) => {
     const flowchartRef = useRef<HTMLDivElement>(null);
 
     const handleDownloadPdf = () => {
@@ -94,8 +95,18 @@ const Flowchart: React.FC<FlowchartProps> = ({ data }) => {
                                             <h5 className="text-sm font-semibold mb-2 flex items-center text-gray-600 dark:text-gray-400">
                                                 <BookOpenIcon className="w-4 h-4 mr-2" /> Courses
                                             </h5>
-                                            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                                                {term.courses.map(course => <li key={course}>{course}</li>)}
+                                            <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                                                {term.courses.map(course => (
+                                                    <li key={course}>
+                                                        <button 
+                                                            onClick={() => onCourseClick(course)}
+                                                            className="w-full text-left px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            aria-label={`Get details for course: ${course}`}
+                                                        >
+                                                            {course}
+                                                        </button>
+                                                    </li>
+                                                ))}
                                             </ul>
                                         </div>
                                     </div>

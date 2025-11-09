@@ -8,6 +8,7 @@ import ChatInput from './components/ChatInput';
 import Flowchart from './components/Flowchart';
 import { Header } from './components/Header';
 import PdfEmailModal from './components/PdfEmailModal';
+import SuggestionChips from './components/SuggestionChips';
 
 const App: React.FC = () => {
     const [chat, setChat] = useState<Chat | null>(null);
@@ -15,6 +16,7 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [showFlowchart, setShowFlowchart] = useState<FlowchartData | null>(null);
     const [pdfExportContent, setPdfExportContent] = useState<string | null>(null);
+    const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
 
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const flowchartContainerRef = useRef<HTMLDivElement>(null);
@@ -143,9 +145,10 @@ const App: React.FC = () => {
         return toolResponse;
     }, []);
 
-    const handleSend = async (inputText: string) => {
+    const handleSend = useCallback(async (inputText: string) => {
         if (!inputText.trim() || isLoading || !chat) return;
 
+        setShowSuggestions(false);
         setIsLoading(true);
         const userMessage: Message = { id: Date.now(), role: 'user', text: inputText };
         setMessages(prev => [...prev, userMessage]);
@@ -187,18 +190,40 @@ const App: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [chat, isLoading, handleToolCall]);
     
+    const handleCourseClick = useCallback(async (courseName: string) => {
+        if (isLoading) return;
+
+        // Scroll main chat into view in case user is scrolled down on the flowchart panel
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        await handleSend(`Give me a summary for the course: "${courseName}"`);
+        await handleSend(`Find the top 3 teachers with the highest rating for the course: "${courseName}"`);
+    }, [isLoading, handleSend]);
+
+    const initialSuggestions = [
+        "Analyze my potential based on my interests in art and technology.",
+        "Create a 2-year study plan for an Associate's in Nursing at MDC.",
+        "How much does tuition for a Computer Science degree cost?",
+        "What are the best transfer options from MDC to FIU for a business major?",
+    ];
+
     return (
         <div className="flex flex-col h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
             <Header />
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                 <main ref={chatContainerRef} className="flex-1 p-4 md:p-6 space-y-4 overflow-y-auto">
                     <ChatWindow messages={messages} isLoading={isLoading} />
+                     {showSuggestions && (
+                        <SuggestionChips suggestions={initialSuggestions} onChipClick={handleSend} />
+                    )}
                 </main>
                 {showFlowchart && (
                     <aside ref={flowchartContainerRef} className="w-full md:w-1/2 lg:w-2/5 xl:w-1/3 p-4 md:p-6 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto shadow-lg md:shadow-none">
-                        <Flowchart data={showFlowchart} />
+                        <Flowchart data={showFlowchart} onCourseClick={handleCourseClick} />
                     </aside>
                 )}
             </div>
